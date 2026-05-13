@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bonssight/core/di/injection_container.dart';
 import 'package:bonssight/core/theme/app_colors.dart';
 import 'package:bonssight/features/analysis/presentation/pages/new_analysis_page.dart';
+import 'package:bonssight/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:bonssight/features/auth/presentation/cubit/auth_state.dart';
+import 'package:bonssight/features/auth/presentation/pages/sign_in_page.dart';
 import 'package:bonssight/features/history/presentation/pages/history_page.dart';
 import 'package:bonssight/features/dashboard/presentation/pages/dashboard_page.dart';
 
@@ -16,12 +21,33 @@ class _AppLayoutState extends State<AppLayout> {
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<AuthCubit>(),
+      child: BlocListener<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is AuthUnauthenticated) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const SignInPage()),
+              (_) => false,
+            );
+          }
+        },
+        child: _AppLayoutBody(selectedIndex: _selectedIndex, onIndexChanged: (i) => setState(() => _selectedIndex = i)),
+      ),
+    );
+  }
+}
+
+class _AppLayoutBody extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onIndexChanged;
+
+  const _AppLayoutBody({required this.selectedIndex, required this.onIndexChanged});
+
+  @override
+  Widget build(BuildContext context) {
     final List<Widget> pages = [
-      DashboardPage(onStartAnalysis: () {
-        setState(() {
-          _selectedIndex = 1;
-        });
-      }),
+      DashboardPage(onStartAnalysis: () => onIndexChanged(1)),
       const NewAnalysisPage(),
       const HistoryPage(),
     ];
@@ -31,17 +57,13 @@ class _AppLayoutState extends State<AppLayout> {
       body: Row(
         children: [
           _Sidebar(
-            selectedIndex: _selectedIndex,
-            onIndexChanged: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
+            selectedIndex: selectedIndex,
+            onIndexChanged: onIndexChanged,
           ),
           Expanded(
             child: Container(
               color: AppColors.background,
-              child: pages[_selectedIndex],
+              child: pages[selectedIndex],
             ),
           ),
         ],
@@ -63,6 +85,7 @@ class _Sidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 250,
+      height: double.infinity,
       color: Colors.white,
       child: Column(
         children: [
@@ -108,6 +131,15 @@ class _Sidebar extends StatelessWidget {
             isSelected: selectedIndex == 2,
             onTap: () => onIndexChanged(2),
           ),
+          const Spacer(),
+          const Divider(height: 1, indent: 16, endIndent: 16),
+          _SidebarItem(
+            icon: Icons.logout,
+            title: 'Sign Out',
+            isSelected: false,
+            onTap: () => context.read<AuthCubit>().signOut(),
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -135,7 +167,7 @@ class _SidebarItem extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryBrand.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? AppColors.primaryBrand.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(

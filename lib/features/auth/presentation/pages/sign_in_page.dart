@@ -4,6 +4,8 @@ import 'package:bonssight/core/di/injection_container.dart';
 import 'package:bonssight/core/theme/app_colors.dart';
 import 'package:bonssight/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:bonssight/features/auth/presentation/cubit/auth_state.dart';
+import 'package:bonssight/features/auth/presentation/pages/forgot_password_page.dart';
+import 'package:bonssight/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:bonssight/shared/widgets/app_layout.dart';
 
 class SignInPage extends StatelessWidget {
@@ -196,7 +198,11 @@ class _RightPanel extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ForgotPasswordPage(),
+                    ),
+                  ),
                   child: const Text('Forgot Password?'),
                 ),
               ),
@@ -225,7 +231,11 @@ class _RightPanel extends StatelessWidget {
                 children: [
                   const Text("Don't have an account? ", style: TextStyle(color: AppColors.textSecondary)),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const SignUpPage(),
+                      ),
+                    ),
                     child: const Text('Register Now'),
                   ),
                 ],

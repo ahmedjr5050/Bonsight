@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:bonssight/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:bonssight/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:bonssight/features/history/presentation/cubit/history_cubit.dart';
 import 'package:bonssight/features/analysis/presentation/cubit/analysis_cubit.dart';
@@ -8,10 +9,11 @@ final sl = GetIt.instance;
 
 Future<void> init() async {
   // Data Sources
+  sl.registerLazySingleton(() => AuthRemoteDataSource());
   sl.registerLazySingleton(() => AnalysisRemoteDataSource());
 
   // Cubits
-  sl.registerFactory(() => AuthCubit());
+  sl.registerFactory(() => AuthCubit(authDataSource: sl()));
   sl.registerFactory(() => HistoryCubit());
   sl.registerFactory(() => AnalysisCubit(remoteDataSource: sl()));
 }

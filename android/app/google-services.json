@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "555426828806",
+    "project_id": "bonsight-3887f",
+    "storage_bucket": "bonsight-3887f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:555426828806:android:5124dbac567303104f6987",
+        "android_client_info": {
+          "package_name": "com.example.bonssight"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-6QJIoAysjMN0bbhYLRYMQrV-MybahR4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

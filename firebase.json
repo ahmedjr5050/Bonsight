@@ -1,0 +1,45 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "bonsight-3887f",
+          "appId": "1:555426828806:android:5124dbac567303104f6987",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "bonsight-3887f",
+          "appId": "1:555426828806:ios:11d97932b28736154f6987",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "bonsight-3887f",
+          "configurations": {
+            "android": "1:555426828806:android:5124dbac567303104f6987",
+            "ios": "1:555426828806:ios:11d97932b28736154f6987",
+            "web": "1:555426828806:web:1f0ba4c49ce16b2a4f6987"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
