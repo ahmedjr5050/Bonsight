@@ -10,14 +10,17 @@ import 'package:bonssight/features/history/presentation/pages/history_page.dart'
 import 'package:bonssight/features/dashboard/presentation/pages/dashboard_page.dart';
 
 class AppLayout extends StatefulWidget {
-  const AppLayout({super.key});
+  final String uid;
+  final String email;
+
+  const AppLayout({super.key, required this.uid, required this.email});
 
   @override
   State<AppLayout> createState() => _AppLayoutState();
 }
 
 class _AppLayoutState extends State<AppLayout> {
-  int _selectedIndex = 1; // 1 is New Analysis
+  int _selectedIndex = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -32,24 +35,36 @@ class _AppLayoutState extends State<AppLayout> {
             );
           }
         },
-        child: _AppLayoutBody(selectedIndex: _selectedIndex, onIndexChanged: (i) => setState(() => _selectedIndex = i)),
+        child: _AppLayoutBody(
+          uid: widget.uid,
+          email: widget.email,
+          selectedIndex: _selectedIndex,
+          onIndexChanged: (i) => setState(() => _selectedIndex = i),
+        ),
       ),
     );
   }
 }
 
 class _AppLayoutBody extends StatelessWidget {
+  final String uid;
+  final String email;
   final int selectedIndex;
   final ValueChanged<int> onIndexChanged;
 
-  const _AppLayoutBody({required this.selectedIndex, required this.onIndexChanged});
+  const _AppLayoutBody({
+    required this.uid,
+    required this.email,
+    required this.selectedIndex,
+    required this.onIndexChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      DashboardPage(onStartAnalysis: () => onIndexChanged(1)),
-      const NewAnalysisPage(),
-      const HistoryPage(),
+      DashboardPage(uid: uid, onStartAnalysis: () => onIndexChanged(1)),
+      NewAnalysisPage(uid: uid),
+      HistoryPage(uid: uid),
     ];
 
     return Scaffold(
@@ -57,6 +72,7 @@ class _AppLayoutBody extends StatelessWidget {
       body: Row(
         children: [
           _Sidebar(
+            email: email,
             selectedIndex: selectedIndex,
             onIndexChanged: onIndexChanged,
           ),
@@ -73,10 +89,12 @@ class _AppLayoutBody extends StatelessWidget {
 }
 
 class _Sidebar extends StatelessWidget {
+  final String email;
   final int selectedIndex;
   final ValueChanged<int> onIndexChanged;
 
   const _Sidebar({
+    required this.email,
     required this.selectedIndex,
     required this.onIndexChanged,
   });
@@ -90,14 +108,13 @@ class _Sidebar extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 32),
-          // Logo
           Column(
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                   color: AppColors.primaryBrand,
-                   borderRadius: BorderRadius.circular(16),
+                  color: AppColors.primaryBrand,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(Icons.health_and_safety, color: Colors.white, size: 32),
               ),
@@ -133,6 +150,34 @@ class _Sidebar extends StatelessWidget {
           ),
           const Spacer(),
           const Divider(height: 1, indent: 16, endIndent: 16),
+          // Logged-in user info
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: AppColors.primaryBrand.withValues(alpha: 0.1),
+                  child: Text(
+                    email.isNotEmpty ? email[0].toUpperCase() : '?',
+                    style: const TextStyle(
+                      color: AppColors.primaryBrand,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    email,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
           _SidebarItem(
             icon: Icons.logout,
             title: 'Sign Out',

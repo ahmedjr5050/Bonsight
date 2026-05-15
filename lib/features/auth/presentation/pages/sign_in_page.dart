@@ -56,7 +56,9 @@ class _SignInLayoutState extends State<_SignInLayout> {
       listener: (context, state) {
         if (state is AuthSuccess) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const AppLayout()),
+            MaterialPageRoute(
+              builder: (_) => AppLayout(uid: state.uid, email: state.email),
+            ),
           );
         } else if (state is AuthFailure) {
           ScaffoldMessenger.of(context).showSnackBar(

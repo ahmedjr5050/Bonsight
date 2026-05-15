@@ -24,24 +24,35 @@ class AnalysisRemoteDataSource {
 
     request.files.add(multipartFile);
 
+    log('── Analysis Request ──────────────────────────');
+    log('POST ${uri.toString()}');
+    log('File: ${imageFile.name} (${imageBytes.lengthInBytes} bytes)');
+    log('─────────────────────────────────────────────');
+
     try {
+      final stopwatch = Stopwatch()..start();
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
+      stopwatch.stop();
+
+      log('── Analysis Response ─────────────────────────');
+      log('Status : ${response.statusCode}');
+      log('Time   : ${stopwatch.elapsedMilliseconds}ms');
+      log('Body   : ${response.body}');
+      log('─────────────────────────────────────────────');
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
         return AnalysisResult.fromJson(decodedJson);
       } else {
-        log(
-          'Failed to analyze image: ${response.statusCode} - ${response.body}',
-        );
-
         throw Exception(
           'Failed to analyze image: ${response.statusCode} - ${response.body}',
         );
       }
     } catch (e) {
-      log('Network error during analysis: $e');
+      log('── Analysis Error ────────────────────────────');
+      log('$e');
+      log('─────────────────────────────────────────────');
       throw Exception('Network error during analysis: $e');
     }
   }
