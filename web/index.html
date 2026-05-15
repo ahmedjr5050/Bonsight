@@ -42,6 +42,14 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script>window.flutterfire_web_sdk_version = '12.13.0';</script>
+  <!-- Unregister any existing service workers so updates are always instant -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let r of registrations) r.unregister();
+      });
+    }
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

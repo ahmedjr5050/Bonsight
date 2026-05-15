@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 class Detection {
   final String fractureType;
   final double confidence;
@@ -27,18 +30,22 @@ class Detection {
 class AnalysisResult {
   final List<Detection> detections;
   final String imageResult;
+  final Uint8List? imageBytes;
 
   AnalysisResult({
     required this.detections,
     required this.imageResult,
+    this.imageBytes,
   });
 
   factory AnalysisResult.fromJson(Map<String, dynamic> json) {
+    final b64 = json['image_base64'] as String?;
     return AnalysisResult(
       detections: (json['detections'] as List)
           .map((e) => Detection.fromJson(e as Map<String, dynamic>))
           .toList(),
-      imageResult: json['image_result'] as String,
+      imageResult: b64 ?? '',
+      imageBytes: b64 != null ? base64Decode(b64) : null,
     );
   }
 }

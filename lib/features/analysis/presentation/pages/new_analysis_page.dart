@@ -113,6 +113,11 @@ class _NewAnalysisViewState extends State<_NewAnalysisView> {
         final isAnalyzing = state is AnalysisProcessing;
         final isCompleted = state is AnalysisCompleted;
 
+        final completedState = state is AnalysisCompleted ? state : null;
+        final String? annotatedImageUrl = completedState?.result.imageResult;
+        final Uint8List? annotatedImageBytes =
+            completedState?.result.imageBytes;
+
         return Padding(
           padding: const EdgeInsets.all(32.0),
           child: Column(
@@ -158,6 +163,8 @@ class _NewAnalysisViewState extends State<_NewAnalysisView> {
                         context,
                         selectedImage,
                         isAnalyzing,
+                        annotatedImageUrl,
+                        annotatedImageBytes,
                       ),
                     ),
                     const SizedBox(width: 24),
@@ -186,11 +193,19 @@ class _NewAnalysisViewState extends State<_NewAnalysisView> {
     BuildContext context,
     XFile? selectedImage,
     bool isAnalyzing,
+    String? annotatedImageUrl,
+    Uint8List? annotatedImageBytes,
   ) {
     if (selectedImage == null) {
       return _buildUploadZone(context);
     }
-    return _buildImagePreview(context, selectedImage, isAnalyzing);
+    return _buildImagePreview(
+      context,
+      selectedImage,
+      isAnalyzing,
+      annotatedImageUrl,
+      annotatedImageBytes,
+    );
   }
 
   Widget _buildUploadZone(BuildContext context) {
@@ -267,6 +282,8 @@ class _NewAnalysisViewState extends State<_NewAnalysisView> {
     BuildContext context,
     XFile image,
     bool isAnalyzing,
+    String? annotatedImageUrl,
+    Uint8List? annotatedImageBytes,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -278,8 +295,40 @@ class _NewAnalysisViewState extends State<_NewAnalysisView> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Actual image
-          if (_imageBytes != null)
+          // Priority: annotated bytes → annotated URL → original bytes
+          if (annotatedImageBytes != null)
+            Image.memory(
+              annotatedImageBytes,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => const Center(
+                child: Icon(
+                  Icons.broken_image,
+                  color: Colors.white54,
+                  size: 64,
+                ),
+              ),
+            )
+          else if (annotatedImageUrl != null)
+            Image.network(
+              annotatedImageUrl,
+              fit: BoxFit.contain,
+              loadingBuilder: (context, child, progress) => progress == null
+                  ? child
+                  : const Center(
+                      child: CircularProgressIndicator(color: Colors.white54),
+                    ),
+              // Server doesn't expose results/ publicly — show original image
+              errorBuilder: (context, error, stackTrace) => _imageBytes != null
+                  ? Image.memory(_imageBytes!, fit: BoxFit.contain)
+                  : const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Colors.white54,
+                        size: 64,
+                      ),
+                    ),
+            )
+          else if (_imageBytes != null)
             Image.memory(
               _imageBytes!,
               fit: BoxFit.contain,

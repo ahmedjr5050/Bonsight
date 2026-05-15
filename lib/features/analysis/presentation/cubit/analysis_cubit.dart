@@ -63,33 +63,42 @@ class AnalysisCubit extends Cubit<AnalysisState> {
   }) : super(AnalysisInitial());
 
   void selectImage(XFile image) {
+    log('[AnalysisCubit] Image selected: ${image.name}');
     emit(AnalysisImageSelected(image));
   }
 
   Future<void> startAnalysis(XFile image) async {
+    log('[AnalysisCubit] ▶ Starting analysis for: ${image.name}');
     emit(AnalysisProcessing(image));
     try {
       final imageBytes = await image.readAsBytes();
       final result = await remoteDataSource.analyzeImage(image);
 
-      // Show result immediately — don't wait for Firebase save
+      log('[AnalysisCubit] ✓ Analysis complete — ${result.detections.length} detection(s)');
+      for (final d in result.detections) {
+        log('[AnalysisCubit]   • ${d.fractureType} | ${(d.confidence * 100).toStringAsFixed(1)}% | ${d.severity}');
+      }
+      log('[AnalysisCubit]   imageResult: ${result.imageResult}');
+      log('[AnalysisCubit]   imageBytes : ${result.imageBytes != null ? '${result.imageBytes!.length} bytes' : 'null'}');
+
       emit(AnalysisCompleted(image, result));
 
-      // Save to Firestore/Storage in the background
       historyDataSource.saveAnalysis(
         uid: uid,
         imageName: image.name,
         imageBytes: imageBytes,
         result: result,
       ).catchError((e) {
-        log('Background save failed: $e');
+        log('[AnalysisCubit] ✗ Background save failed: $e');
       });
     } catch (e) {
+      log('[AnalysisCubit] ✗ Analysis error: $e');
       emit(AnalysisError(image, e.toString()));
     }
   }
 
   void reset() {
+    log('[AnalysisCubit] Reset');
     emit(AnalysisInitial());
   }
 }

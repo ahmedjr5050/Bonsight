@@ -46,18 +46,20 @@ class HistoryRemoteDataSource {
       return;
     }
 
-    // Step 2: Save image bytes as base64 in a separate document (avoids Firebase Storage)
-    // Max safe size: ~700KB original → ~933KB base64, under Firestore's 1MB doc limit
-    if (imageBytes.lengthInBytes <= 700 * 1024) {
+    // Step 2: Save annotated image (with bounding boxes) — fall back to original if missing
+    // Max safe size: ~700KB → ~933KB base64, under Firestore's 1MB doc limit
+    final bytesToSave = result.imageBytes ?? imageBytes;
+    if (bytesToSave.lengthInBytes <= 700 * 1024) {
       try {
-        final base64Image = base64Encode(imageBytes);
+        final base64Image = base64Encode(bytesToSave);
         await _imageDoc(uid, docRef.id).set({'imageBase64': base64Image});
-        log('Image      : saved as base64 (${base64Image.length} chars)');
+        final label = result.imageBytes != null ? 'annotated' : 'original';
+        log('Image      : saved as base64 ($label, ${base64Image.length} chars)');
       } catch (e) {
         log('Image      : FAILED to save — $e');
       }
     } else {
-      log('Image      : skipped (too large: ${imageBytes.lengthInBytes} bytes)');
+      log('Image      : skipped (too large: ${bytesToSave.lengthInBytes} bytes)');
     }
 
     log('─────────────────────────────────────────────');
