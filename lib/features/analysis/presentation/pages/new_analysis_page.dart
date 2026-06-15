@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bonssight/core/theme/app_colors.dart';
 import 'package:bonssight/core/di/injection_container.dart';
 import 'package:bonssight/features/analysis/presentation/cubit/analysis_cubit.dart';
+import 'package:bonssight/features/analysis/data/models/analysis_result_model.dart';
+import 'package:bonssight/features/chat/presentation/pages/chat_page.dart';
 
 class NewAnalysisPage extends StatelessWidget {
   final String uid;
@@ -690,7 +692,25 @@ class _NewAnalysisViewState extends State<_NewAnalysisView> {
             },
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
+        if (state.result.detections.isNotEmpty)
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _openChat(context, state.result),
+              icon: const Icon(Icons.chat_bubble_outline),
+              label: const Text('Discuss with AI'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primaryBrand,
+                side: const BorderSide(color: AppColors.primaryBrand),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+        const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
@@ -714,6 +734,33 @@ class _NewAnalysisViewState extends State<_NewAnalysisView> {
           ),
         ),
       ],
+    );
+  }
+
+  void _openChat(BuildContext context, AnalysisResult result) {
+    final buffer = StringBuffer();
+    buffer.writeln(
+      'I had an X-ray analyzed and the AI detected the following finding(s):',
+    );
+    for (final det in result.detections) {
+      buffer.writeln(
+        '- ${det.fractureType} (confidence ${(det.confidence * 100).toStringAsFixed(1)}%, '
+        'severity: ${det.severity}). ${det.description} Suggested treatment: ${det.treatment}.',
+      );
+    }
+    buffer.writeln(
+      '\nCan you explain this condition in simple terms, what it means, and what I should know about it?',
+    );
+
+    final fractureTypes = result.detections.map((d) => d.fractureType).toList();
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChatPage(
+          initialMessage: buffer.toString(),
+          fractureTypes: fractureTypes,
+        ),
+      ),
     );
   }
 

@@ -6,6 +6,8 @@ import 'package:bonssight/features/history/presentation/cubit/history_cubit.dart
 import 'package:bonssight/features/analysis/presentation/cubit/analysis_cubit.dart';
 import 'package:bonssight/features/analysis/data/datasources/analysis_remote_data_source.dart';
 import 'package:bonssight/features/dashboard/presentation/cubit/dashboard_cubit.dart';
+import 'package:bonssight/features/chat/data/chat_api_service.dart';
+import 'package:bonssight/features/chat/presentation/cubit/chat_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -13,6 +15,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => AuthRemoteDataSource());
   sl.registerLazySingleton(() => AnalysisRemoteDataSource());
   sl.registerLazySingleton(() => HistoryRemoteDataSource());
+  sl.registerLazySingleton(() => ChatApiService());
 
   sl.registerFactory(() => AuthCubit(authDataSource: sl()));
 
@@ -25,4 +28,5 @@ Future<void> init() async {
   sl.registerFactoryParam<DashboardCubit, String, void>(
     (uid, _) => DashboardCubit(dataSource: sl(), uid: uid),
   );
+  sl.registerFactory(() => ChatCubit(chatService: sl()));
 }
